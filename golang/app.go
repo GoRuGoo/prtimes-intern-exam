@@ -151,7 +151,7 @@ func getSessionUser(r *http.Request) User {
 
 	u := User{}
 
-	err := db.Get(&u, "SELECT * FROM `users` WHERE `id` = ?", uid)
+	err := db.Get(&u, "SELECT `id`,`account_name`,`passhash`,`authority`,del_flg`,`created_at` FROM `users` WHERE `id` = ?", uid)
 	if err != nil {
 		return User{}
 	}
@@ -181,7 +181,7 @@ func makePosts(results []Post, csrfToken string, allComments bool) ([]Post, erro
 			return nil, err
 		}
 
-		query := "SELECT * FROM `comments` WHERE `post_id` = ? ORDER BY `created_at` DESC"
+		query := "SELECT `id`,`post_id`,`user_id`,`comment`,`created_at`,`user` FROM `comments` WHERE `post_id` = ? ORDER BY `created_at` DESC"
 		if !allComments {
 			query += " LIMIT 3"
 		}
@@ -192,7 +192,7 @@ func makePosts(results []Post, csrfToken string, allComments bool) ([]Post, erro
 		}
 
 		for i := 0; i < len(comments); i++ {
-			err := db.Get(&comments[i].User, "SELECT * FROM `users` WHERE `id` = ?", comments[i].UserID)
+			err := db.Get(&comments[i].User, "SELECT `id`,`account_name`,`passhash`,`authority`,del_flg`,`created_at` FROM `users` WHERE `id` = ?", comments[i].UserID)
 			if err != nil {
 				return nil, err
 			}
@@ -205,7 +205,7 @@ func makePosts(results []Post, csrfToken string, allComments bool) ([]Post, erro
 
 		p.Comments = comments
 
-		err = db.Get(&p.User, "SELECT * FROM `users` WHERE `id` = ?", p.UserID)
+		err = db.Get(&p.User, "SELECT `id`,`account_name`,`passhash`,`authority`,del_flg`,`created_at` FROM `users` WHERE `id` = ?", p.UserID)
 		if err != nil {
 			return nil, err
 		}
@@ -420,7 +420,7 @@ func getAccountName(w http.ResponseWriter, r *http.Request) {
 	accountName := chi.URLParam(r, "accountName")
 	user := User{}
 
-	err := db.Get(&user, "SELECT * FROM `users` WHERE `account_name` = ? AND `del_flg` = 0", accountName)
+	err := db.Get(&user, "SELECT `id`, `user_id`, `body`, `mime`, `created_at` FROM `users` WHERE `account_name` = ? AND `del_flg` = 0", accountName)
 	if err != nil {
 		log.Print(err)
 		return
